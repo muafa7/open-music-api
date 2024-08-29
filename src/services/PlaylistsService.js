@@ -50,10 +50,6 @@ class PlaylistsService {
         }
     }
 
-    async addPlaylistSong({id, songId}) {
-
-    }
-
     async getPlaylistSongsById(id) {
         const query = {
           text: `SELECT playlists.id AS playlist_id, playlists.name AS playlist_name, playlists.year AS playlist_year,
@@ -100,21 +96,21 @@ class PlaylistsService {
       if (!result.rows.length) {
         throw new NotFoundError('Playlist tidak ditemukan');
       }
-      const note = result.rows[0];
-      if (note.owner !== owner) {
+      const playlist = result.rows[0];
+      if (playlist.owner !== owner) {
         throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
       }
     }
 
-    async verifyPlaylistAccess(noteId, userId) {
+    async verifyPlaylistAccess(playlistId, userId) {
       try {
-        await this.verifyPlaylistOwner(noteId, userId);
+        await this.verifyPlaylistOwner(playlistId, userId);
       } catch (error) {
         if (error instanceof NotFoundError) {
           throw error;
         }
         try {
-          await this._collaborationService.verifyCollaborator(noteId, userId);
+          await this._collaborationService.verifyCollaborator(playlistId, userId);
         } catch {
           throw error;
         }
