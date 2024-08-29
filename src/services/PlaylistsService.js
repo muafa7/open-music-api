@@ -1,6 +1,7 @@
 class PlaylistsService {
-    constructor() {
+    constructor(collaborationService) {
       this._pool = new Pool();
+      this._collaborationService = collaborationService;
     }
 
     async addPlaylist({ name, owner }) {
@@ -120,3 +121,5 @@ class PlaylistsService {
       }
     }
 }
+
+module.exports = PlaylistsService;
