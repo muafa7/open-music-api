@@ -1,7 +1,4 @@
-
-const ClientError = require('../../exceptions/ClientError');
- 
-class UsersHandler {
+ class UsersHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
