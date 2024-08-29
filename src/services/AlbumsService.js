@@ -34,7 +34,6 @@ class AlbumsService {
   }
 
   async getAlbumById(id) {
-    // try{
       const query = {
         text: `SELECT albums.id AS album_id, albums.name AS album_name, albums.year AS album_year,
               songs.id AS song_id, songs.title AS song_title, songs.performer AS song_performer
@@ -65,15 +64,10 @@ class AlbumsService {
       songs: songs
     };
       
-      return album;
-    // } catch(err) {
-    //   console.log(err)
-    // }
- 
+      return album; 
   }
 
   async editAlbumById(id, { name, year }) {
-    // try {
       const updatedAt = new Date().toISOString();
       const query = {
         text: 'UPDATE albums SET name = $1, year = $2, "updatedAt" = $3 WHERE id = $4 RETURNING id',
@@ -85,9 +79,6 @@ class AlbumsService {
       if (!result.rows.length) {
         throw new NotFoundError('Gagal memperbarui album. Id tidak ditemukan');
       }
-    // } catch(err) {
-    //   console.log(err) 
-    // }
   }
 
   async deleteAlbumById(id) {

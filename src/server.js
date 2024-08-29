@@ -1,23 +1,22 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
-const Inert = require('@hapi/inert');
-const Vision = require('@hapi/vision');
-const HapiSwagger = require('hapi-swagger');
-const Package = require('../package.json');
+
+//albums
 const albums = require('./api/albums');
 const AlbumsService = require('./services/AlbumsService');
 const AlbumsValidator = require('./validator/albums');
+
+//songs
 const songs = require('./api/songs');
 const SongsService = require('./services/SongsService');
 const SongsValidator = require('./validator/songs');
-const ClientError = require('./exceptions/ClientError')
 
-const swaggerOptions = {
-  info: {
-    title: 'API Documentation',
-    version: Package.version,
-  },
-};
+//users
+const users = require('./api/users');
+const UsersService = require('./services/postgres/UsersService');
+const UsersValidator = require('./validator/users');
+
+const ClientError = require('./exceptions/ClientError')
 
 const init = async () => {
   const albumsService = new AlbumsService();
@@ -49,23 +48,35 @@ const init = async () => {
         validator: SongsValidator,
       },
     },
-    Inert,
-    Vision,
     {
-      plugin: HapiSwagger,
-      options: swaggerOptions,
+      plugin: users,
+      options: {
+        service: usersService,
+        validator: UsersValidator,
+      },
     },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
   
+    // Handle client errors
     if (response instanceof ClientError) {
       const newResponse = h.response({
         status: 'fail',
         message: response.message,
       });
       newResponse.code(response.statusCode);
+      return newResponse;
+    }
+
+    // Handle server errors
+    if (response.isBoom && response.output.statusCode === 500) {
+      const newResponse = h.response({
+        status: 'error',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      });
+      newResponse.code(500);
       return newResponse;
     }
       

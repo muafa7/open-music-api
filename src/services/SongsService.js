@@ -66,7 +66,6 @@ class SongsService {
   }
 
   async editSongById(id, { title, year, genre, performer, duration, albumId }) {
-    // try{
       const updatedAt = new Date().toISOString();
       const query = {
         text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, "albumId" = $6, updated_at = $7 WHERE id = $8 RETURNING id',
@@ -78,9 +77,6 @@ class SongsService {
       if (!result.rows.length) {
         throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan');
       }
-    // } catch(err) {
-    //   console.log(err)
-    // }
   }
 
   async deleteSongById(id) {
