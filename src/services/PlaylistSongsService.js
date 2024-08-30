@@ -1,13 +1,15 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
-const InvariantError = require('../../exceptions/InvariantError');
+const InvariantError = require('../exceptions/InvariantError');
  
 class PlaylistSongsService {
-  constructor() {
+  constructor(songsService) {
     this._pool = new Pool();
+    this._songsService = songsService;
   }
  
   async addPlaylistSong(playlistId, songId) {
+    await this._songsService.getSongById(songId);
     const id = `playlist-song-${nanoid(16)}`;
  
     const query = {

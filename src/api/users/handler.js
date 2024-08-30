@@ -1,4 +1,4 @@
- class UsersHandler {
+class UsersHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
@@ -25,7 +25,7 @@
     return response;
   }
 
-  async getUserByIdHandler(request, h) {
+  async getUserByIdHandler(request) {
     const { id } = request.params;
  
     const user = await this._service.getUserById(id);
@@ -34,20 +34,20 @@
       status: 'success',
       data: {
         user,
-    },
-    }
-    }
+      },
+    };
+  }
 
-    async getUsersByUsernameHandler(request, h) {
-        const { username = '' } = request.query;
-        const users = await this._service.getUsersByUsername(username);
-        return {
-          status: 'success',
-          data: {
-            users,
-          },
-        };
-    }
+  async getUsersByUsernameHandler(request) {
+    const { username = '' } = request.query;
+    const users = await this._service.getUsersByUsername(username);
+    return {
+      status: 'success',
+      data: {
+        users,
+      },
+    };
+  }
 }
 
 module.exports = UsersHandler;

@@ -1,5 +1,3 @@
-const ClientError = require('../../exceptions/ClientError');
- 
 class CollaborationsHandler {
   constructor(collaborationsService, playlistsService, validator) {
     this._collaborationsService = collaborationsService;
@@ -29,7 +27,7 @@ class CollaborationsHandler {
     return response;
   }
  
-  async deleteCollaborationHandler(request, h) {
+  async deleteCollaborationHandler(request) {
     this._validator.validateCollaborationPayload(request.payload);
     const { id: credentialId } = request.auth.credentials;
     const { playlistId, userId } = request.payload;

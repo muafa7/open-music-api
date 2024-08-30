@@ -1,20 +1,20 @@
-const { PlaylistPayloadSchema, PlaylistSongSchema} = require('./schema');
+const { PlaylistSchema, PlaylistSongSchema } = require('./schema');
 const InvariantError = require('../../exceptions/InvariantError');
  
 const PlaylistsValidator = {
   validatePlaylistPayload: (payload) => {
-    const validationResult = PlaylistPayloadSchema.validate(payload);
-        if (validationResult.error) {
-        throw new InvariantError(validationResult.error.message);
-        }
-    },
+    const validationResult = PlaylistSchema.validate(payload);
+    if (validationResult.error) {
+      throw new InvariantError(validationResult.error.message);
+    }
+  },
 
   validatePlaylistSongPayload: (payload) => {
     const validationResult = PlaylistSongSchema.validate(payload);
-        if (validationResult.error) {
-        throw new InvariantError(validationResult.error.message);
-        }
-    },
+    if (validationResult.error) {
+      throw new InvariantError(validationResult.error.message);
+    }
+  },
 };
  
 module.exports = PlaylistsValidator;

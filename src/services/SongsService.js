@@ -2,15 +2,17 @@ const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../exceptions/InvariantError');
 const { mapDBToSongModel } = require('../utils');
-const NotFoundError = require('../exceptions/NotFoundError')
+const NotFoundError = require('../exceptions/NotFoundError');
  
 class SongsService {
   constructor() {
     this._pool = new Pool();
   }
 
-  async addSong({ title, year, genre, performer, duration, albumId }) {
-    const id = 'song-' + nanoid(16);
+  async addSong({
+    title, year, genre, performer, duration, albumId, 
+  }) {
+    const id = `song-${nanoid(16)}`;
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;
  
@@ -22,8 +24,8 @@ class SongsService {
     const result = await this._pool.query(query);
 
     if (!result.rows[0].id) {
-        throw new InvariantError('Lagu gagal ditambahkan');
-      }
+      throw new InvariantError('Lagu gagal ditambahkan');
+    }
    
     return result.rows[0].id;
   }
@@ -33,22 +35,22 @@ class SongsService {
     const queryParams = [];
 
     if (title) {
-    queryParams.push(`%${title}%`);
-    queryText += ` AND title ILIKE $${queryParams.length}`; // Use ILIKE for case-insensitive search
-  }
+      queryParams.push(`%${title}%`);
+      queryText += ` AND title ILIKE $${queryParams.length}`; // Use ILIKE for case-insensitive search
+    }
 
-  if (performer) {
-    queryParams.push(`%${performer}%`);
-    queryText += ` AND performer ILIKE $${queryParams.length}`;
-  }
+    if (performer) {
+      queryParams.push(`%${performer}%`);
+      queryText += ` AND performer ILIKE $${queryParams.length}`;
+    }
 
-  const query = {
-    text: queryText,
-    values: queryParams,
-  };
+    const query = {
+      text: queryText,
+      values: queryParams,
+    };
 
-  const result = await this._pool.query(query);
-  return result.rows.map(mapDBToSongModel);
+    const result = await this._pool.query(query);
+    return result.rows.map(mapDBToSongModel);
   }
 
   async getSongById(id) {
@@ -65,18 +67,20 @@ class SongsService {
     return result.rows.map(mapDBToSongModel)[0];
   }
 
-  async editSongById(id, { title, year, genre, performer, duration, albumId }) {
-      const updatedAt = new Date().toISOString();
-      const query = {
-        text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, "albumId" = $6, updated_at = $7 WHERE id = $8 RETURNING id',
-        values: [title, year, genre, performer, duration, albumId, updatedAt, id],
-      };
+  async editSongById(id, {
+    title, year, genre, performer, duration, albumId,
+  }) {
+    const updatedAt = new Date().toISOString();
+    const query = {
+      text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, "albumId" = $6, updated_at = $7 WHERE id = $8 RETURNING id',
+      values: [title, year, genre, performer, duration, albumId, updatedAt, id],
+    };
    
-      const result = await this._pool.query(query);
+    const result = await this._pool.query(query);
    
-      if (!result.rows.length) {
-        throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan');
-      }
+    if (!result.rows.length) {
+      throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan');
+    }
   }
 
   async deleteSongById(id) {
