@@ -1,6 +1,8 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const path = require('path');
+const Inert = require('@hapi/inert');
 
 // albums
 const albums = require('./api/albums');
@@ -38,10 +40,27 @@ const PlaylistSongsService = require('./services/PlaylistSongsService');
 // playlist activity
 const PlaylistSongActivitiesService = require('./services/PlaylistSongActivitiesService');
 
+// exports
+const _exports = require('./api/exports');
+const ProducerService = require('./services/rabbitmq/ProducerService');
+const ExportsValidator = require('./validator/exports');
+
+// uploads
+const StorageService = require('./services/storage/StorageService');
+const UploadsValidator = require('./validator/uploads');
+
+// cache
+const CacheService = require('./services/redis/CacheService');
+
+// albumLikes
+
+const AlbumLikesService = require('./services/AlbumLikesService');
+
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
-  const albumsService = new AlbumsService();
+  const cacheService = new CacheService();
+  const albumsService = new AlbumsService(cacheService);
   const songsService = new SongsService();
   const usersService = new UsersService();
   const collaborationsService = new CollaborationsService(usersService);
@@ -49,6 +68,8 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService();
   const playlistSongsService = new PlaylistSongsService(songsService);
   const playlistSongActivitiesService = new PlaylistSongActivitiesService();
+  const storageService = new StorageService(path.resolve(__dirname, 'api/albums/file/images'));
+  const albumLikeService = new AlbumLikesService(cacheService);
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -63,6 +84,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -87,7 +111,10 @@ const init = async () => {
       plugin: albums,
       options: {
         service: albumsService,
+        storageService,
+        albumLikeService,
         validator: AlbumsValidator,
+        uploadValidator: UploadsValidator,
       },
     },
     {
@@ -131,6 +158,14 @@ const init = async () => {
         validator: CollaborationsValidator,
       },
     },
+    {
+      plugin: _exports,
+      options: {
+        service: ProducerService,
+        playlistsService,
+        validator: ExportsValidator,
+      },
+    },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
@@ -146,6 +181,7 @@ const init = async () => {
       return newResponse;
     }
 
+    // if (response.statusCode === 415) console.log(response);
     // Handle server errors
     if (response.isBoom && response.output.statusCode === 500) {
       const newResponse = h.response({
